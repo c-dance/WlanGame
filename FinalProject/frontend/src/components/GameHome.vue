@@ -91,7 +91,7 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn position="center" color="orange" @click="OpenRoom(r.name, r.lock, r.limit-r.mem)" >
+        <v-btn position="center" color="orange" @click="OpenRoom(r.name, r.lock, r.limit-r.mem, r._id)" >
         들어가기 
         <v-img contain transition="scale-transition" width="20px" height="20px" v-if='r.lock===true' src="../assets/lock.png"/></v-btn>
         <v-spacer></v-spacer>
@@ -155,7 +155,7 @@ export default {
         .then((r) => {
           console.log(r.data);
           alert(this.name+'의 방이 만들어졌습니다.');
-          this.$router.push({name: 'GameRoom', params: {id: this.name}});
+          this.$router.push({path: '/room/id/'+this.name, params: {name: this.name}});
         })
         .catch((e) => {
           console.error(e.message)
@@ -164,12 +164,12 @@ export default {
       //route.push ... 이동
 
     },
-    OpenRoom(name, lock, cnt){
+    OpenRoom(name, lock, cnt, id){
       if(cnt===0){
         alert("술모임방이 꽉 찼습니다. 다른 방을 둘러보세요")
       }else if(lock===false){
-        alert("술 모임방으로 들어갑니다.");
-        //this.$router.push({path: '/room/name/:id?', param: {name: this.name}});
+        alert(name+ "술 모임방으로 들어갑니다.");
+        this.$router.push({name: 'Gameroom', params: {id:id, name:name}});
 
       }else{
         alert("비밀 술모임방입니다. 비밀먼호를 입력해주세요.")

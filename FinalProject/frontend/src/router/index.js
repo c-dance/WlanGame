@@ -12,19 +12,20 @@ const routes = [
     component: Home
   },
   {
-    path: '/room/id/:id?',
+    path: '/room/id/:id',
     name: 'Gameroom',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../components/GameRoom.vue'),
     children : [
-      {path :"game0", component: () => import('../components/gameComponents/game0.vue')},
-      {path :"game1", component: () => import('../components/gameComponents/game1.vue')},
-      {path :"game2", component: () => import('../components/gameComponents/game2.vue')},
-      {path :"game3", component: () => import('../components/gameComponents/game3.vue')},
-      {path :"game4", component: () => import('../components/gameComponents/game4.vue')}
-    ]
+      {path :"game0", name:"game0", component: () => import('../components/gameComponents/game0.vue')},
+      {path :"game1", name:"game1",component: () => import('../components/gameComponents/game1.vue')},
+      {path :"game2", name:"game2", component: () => import('../components/gameComponents/game2.vue')},
+      {path :"game3", name:"game3",component: () => import('../components/gameComponents/game3.vue')},
+      {path :"game4", name:"game4",component: () => import('../components/gameComponents/game4.vue')}
+    ],
+    props: true
 
 
   },
