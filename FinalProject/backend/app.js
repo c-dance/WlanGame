@@ -10,7 +10,7 @@ var apiRouter = require('./routes/api');
 var cors = require('cors');
 
 var mongoose = require('mongoose');
-var mongoUri = 'mongodb://localhost:27017/rooms';
+var mongoUri = 'mongodb://localhost:27017/WlanGame';
 
 var app = express();
 
