@@ -35,28 +35,31 @@
     <br/>
     <p>직접 술모임 방을 만들 수 있습니다.</p>
     <v-btn v-on:click="createRoom" rounded dark width="200">{{openText}}</v-btn>
- <v-row v-if="open">
-          <v-col>
-            <br/>
-          <p fontSize="10">술모임방 이름을 입력해 주세요</p>
-          <v-text-field v-model="name" :counter="10" :rules="nameRules" required></v-text-field>
-          <br/>
-          <p>어떤 술모임방인지 소개해 주세요</p>
-          <v-textarea type="text" v-model="desc" :counter="40" :rules="descRules"  rows="2" row-height = "10"></v-textarea>
-          </v-col>
-          <v-col>
-            <br/>
-          <p>술모임방 멤버는 최대 {{limit}}명(선택)으로 제한합니다</p>
-          <v-select v-model="limit" v-bind:items="[1,2,3,4,5,6,7,8]" label="멤버 제한(최대 8명)"></v-select>
-          <v-checkbox v-model="lock" label="술모임방에 비밀 번호 만들기"></v-checkbox>
-          <v-text-field v-if="lock" v-model="pwd" :counter="8" :rules="pwdRules" label="비밀번호" required></v-text-field>
-          </v-col>
-          <v-col>
-            <br/>
-          <p>완료를 누르면 바로 방으로 입장합니다.</p>
-          <br/>
+  <v-row v-if="open">
+    <v-col>
+      <br/>
+        <p fontSize="10">술모임방 이름을 입력해 주세요</p>
+        <v-text-field v-model="name" :counter="10" :rules="nameRules" required></v-text-field>
+      <br/>
+        <p>어떤 술모임방인지 소개해 주세요</p>
+        <v-textarea type="text" v-model="desc" :counter="40" :rules="descRules"  rows="2" row-height = "10"></v-textarea>
+    </v-col>
+    <v-col>
+      <br/>
+        <p>술모임방 멤버는 최대 {{limit}}명(선택)으로 제한합니다</p>
+        <v-select v-model="limit" v-bind:items="[1,2,3,4,5,6,7,8]" label="멤버 제한(최대 8명)"></v-select>
+        <v-checkbox v-model="lock" label="술모임방에 비밀 번호 만들기"></v-checkbox>
+        <v-text-field v-if="lock" v-model="pwd" :counter="8" :rules="pwdRules" label="비밀번호" required></v-text-field>
+    </v-col>
+    <v-col>
+      <br/>
+        <p fontSize="10">본인의 닉네임을 입력해 주세요</p>
+        <v-text-field v-model="nickname" :counter="10" :rules="nicknameRules" required></v-text-field>    
+      <br/>
+        <p>완료를 누르면 바로 방으로 입장합니다.</p>
+      <br/>
           <v-btn v-on:click="finishCreate" rounded color="dark" dark width="100">입력 완료</v-btn>
-          </v-col>
+    </v-col>
   </v-row>
    <v-alert :value="alert" dense type="success" color="dark" dark>
         {{ name }} 방이 만들어졌습니다. 잠시 후 방으로 입장합니다.  
@@ -84,17 +87,37 @@
       <v-card-subtitle height="20px" class="pb-1">
         모임중인 멤버 : 
         <v-avatar v-for="n in r.mem" :key="n" size="20"><v-img src="../assets/full.png" /></v-avatar>
-        <v-avatar v-for="n in (r.limit-r.mem)" :key="n" size="20"><v-img src="../assets/empty.png" /></v-avatar>
+        <v-avatar v-for="n in (r.limit-r.mem.length)" :key="n" size="20"><v-img src="../assets/empty.png" /></v-avatar>
       </v-card-subtitle>
       <v-card-text class="text--primary">
         <div>{{r.desc}}</div>
       </v-card-text>
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-dialog v-model="dialog" persistent max-width="600px">
+          <template v-slot:activator="{ on, attrs }">
+          <v-btn color="orange" dark v-bind="attrs" v-on="on">들어가기</v-btn>
+          </template>
+          <v-card>
+            <v-card-text>
+              <v-layout column>
+                <v-text-field v-model="roomNick" label="닉네임 입력" required></v-text-field><br/>
+                <v-text-field v-if="r.lock" v-model="roomPwd" label="비밀번호 입력" required></v-text-field>
+              </v-layout>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="orange" dark @click="dialog = false">취소</v-btn>
+            <v-btn color="orange" dark @click="dialog = false && OpenRoom(r.name, r.lock, r.limit-r.mem.length, r._id)">입장</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+        <!-- <v-spacer></v-spacer>
         <v-btn position="center" color="orange" @click="OpenRoom(r.name, r.lock, r.limit-r.mem, r._id)" >
         들어가기 
         <v-img contain transition="scale-transition" width="20px" height="20px" v-if='r.lock===true' src="../assets/lock.png"/></v-btn>
-        <v-spacer></v-spacer>
+        <v-spacer></v-spacer> -->
       </v-card-actions>
     </v-card>
     <br/>
@@ -107,7 +130,6 @@
 
 <script>
 import axios from 'axios'
-
 export default {
   name: "GameHome",
   data(){
@@ -119,6 +141,11 @@ export default {
     nameRules: [
         v => !!v || '방이름을 입력해 주세요',
         v => (v && v.length <= 10) || '방이름은 10자 이하로 입력해 주세요',
+      ],
+    nickname:'',
+    nicknameRules: [
+        v => !!v || '닉네임을 입력해 주세요',
+        v => (v && v.length <= 10) || '닉네임은 10자 이하로 입력해 주세요',
       ],
     desc:'',
     descRules: [
@@ -132,8 +159,11 @@ export default {
         v => (v && v.length <= 8) || '비밀번호는 8자 이하로 입력해 주세요',
       ],
     limit :1,
-    mem:1,
     rooms : [],
+    mem:[],
+    dialog : false,
+    roomPwd:'',
+    roomNick:''
     }
   },//data
 
@@ -145,17 +175,15 @@ export default {
     },
 
     finishCreate(){
-      this.name = this.name.trim();
-      this.desc = this.desc.trim();
-      this.pwd = this.pwd.trim();
       axios.post('http://localhost:3000/api/rooms',{
         name:this.name, desc: this.desc, lock:this.lock, pwd:this.pwd, 
-        limit:this.limit, mem:this.mem
+        limit:this.limit, mem:this.nickname
       })
         .then((r) => {
-          console.log(r.data);
+          let id = r.data.id[0]._id;
+          console.log(r.data.id);
           alert(this.name+'의 방이 만들어졌습니다.');
-          this.$router.push({path: '/room/id/'+this.name, params: {name: this.name}});
+          this.$router.push({path: '/room/id/'+id, params: {name: this.name}});
         })
         .catch((e) => {
           console.error(e.message)

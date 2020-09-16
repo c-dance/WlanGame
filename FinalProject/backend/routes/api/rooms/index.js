@@ -1,29 +1,37 @@
 var express = require('express');
 var router = express.Router();
-const room = require('../../../models/room'); //shema 불러옴
+const room = require('../../../models/room'); //모델 불러옴
 
 router.post('/', (req, res, next) => {
   const {name, desc, lock, pwd, limit, mem} = req.body
   const r = new room({name, desc, lock, pwd, limit, mem})
   r.save()
     .then(r=>{
-      res.send({msg : "db저장 완료"})
+      console.log(r + "저장 성공")
+      room.find({name:name},{_id:1})
+        .then(r=> {
+          res.send({id : r})
+        })
+        .catch(e=>{
+          console.error(e)
+        })
     })
     .catch(e => {
-      res.send({msg : "db 저장 실패"})
+      console.error(e)
     })
 });
-
 
 router.get('/', (req, res, next) =>{
   room.find()
     .then(r => {
-      console.log(r)
       res.send({rooms:r})
+      console.log(r)
+      console.log("불러오기 성공")
     })
     .catch(e => {
-      res.send({msg : "불러오기 실패"})
-      })
+      res.send({msg : e})
+      console.error(e)
+    })
 });
 
 

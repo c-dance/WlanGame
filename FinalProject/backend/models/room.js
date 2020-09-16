@@ -6,7 +6,7 @@ const roomSchema = new mongoose.Schema({
     lock :{ type: Boolean, default: false},
     pwd :{type: String, default: ''},
     limit :{type: Number, default: 1},
-    mem :{type: Number, default: 1}
+    mem :{type: Array, default:[]}
 })
 
 const room = mongoose.model('room', roomSchema)
