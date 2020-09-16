@@ -1,16 +1,27 @@
 <template>
 <v-container fluid>
     <v-layout column>
-     <v-flex><!-- plyer list view-->
-
-    </v-flex>
-    <v-flex><!-- input view-->
-    <v-input type="text" v-model="word"  @keyup.enter.exact="callDictAPI"></v-input>
-    <v-btn @click="callDictAPI">검색하기</v-btn>
-    </v-flex>
-    <v-flex>
+    <v-flex><!-- plyer list view / start-->
+        <v-row>
+          <v-col></v-col>
+          <v-col v-for="mem in members" :key="mem" >
+          <v-img alt="player" class="shrink mr-2" contain src="../../assets/p0.png"
+                transition="scale-transition" width="30"/> <p>{{mem}}</p>  
+          </v-col>
+          <v-col></v-col>
+        </v-row>
+      </v-flex><!-- plyer list view / end-->
+    <v-flex><!-- input view /start-->
+    <v-row>
+    <v-col cols="2"></v-col>
+    <v-col cols="5"><v-text-field :rules="rules" v-model="word" @keyup.enter.exact="callDictAPI"></v-text-field></v-col>
+    <v-col cols="3"><v-btn @click="callDictAPI" width="120px" height="50px">검색하기</v-btn></v-col>
+    <v-col cols="2"></v-col>
+    </v-row>
+    </v-flex><!-- input view /end-->
+    <v-flex><!-- result view / start-->
     <li v-for="data in result" :key="data">{{data}}</li>
-  </v-flex>
+  </v-flex><!-- result view / end-->
       </v-layout>
 </v-container>
 </template>
@@ -24,6 +35,7 @@ const regex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
 export default {
   data(){
     return{
+      members :["toto","lolo","hoho","popo"], //this.$route.params.mem
       word : '',
       result : []
     }
