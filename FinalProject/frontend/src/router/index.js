@@ -9,7 +9,14 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    props : true
+  },
+  {
+    path:'/login/:id',
+    name: 'login',
+    component : ()=>import('../components/GameRoomLogin'),
+    props : true
   },
   {
     path: '/room/id/:id',

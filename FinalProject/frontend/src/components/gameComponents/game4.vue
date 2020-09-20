@@ -1,3 +1,3 @@
 <template>
-    <h2>game4</h2>
+    <h2>chatView</h2>
 </template>

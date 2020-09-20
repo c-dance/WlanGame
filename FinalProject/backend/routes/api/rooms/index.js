@@ -1,4 +1,5 @@
 var express = require('express');
+const { isValidObjectId, Mongoose } = require('mongoose');
 var router = express.Router();
 const room = require('../../../models/room'); //모델 불러옴
 
@@ -17,6 +18,7 @@ router.post('/', (req, res, next) => {
         })
     })
     .catch(e => {
+      res.send({msg : e})
       console.error(e)
     })
 });
@@ -33,6 +35,64 @@ router.get('/', (req, res, next) =>{
       console.error(e)
     })
 });
+
+
+/* router.put('/login', (req, res, next) => {
+  const name = req.body.name
+  const nickname = req.body.nickname
+  room.updateOne({name:name},{$addToSet:{mem:nickname}},{new:true})
+      .then(r=>{
+          res.send(r)
+          console.log("success")
+      })
+      .catch(e =>{
+          res.send({msg:e})
+          console.error(e)
+      })
+}); */
+
+router.put('/login', (req, res, next) => {
+  const id = req.body.id
+  const nickname = req.body.nickname
+  room.updateOne({_id:id},{$addToSet:{mem:nickname}},{new:true})
+      .then(r=>{
+          res.send(r)
+          console.log("success")
+      })
+      .catch(e =>{
+          res.send({msg:e})
+          console.error(e)
+      })
+});
+
+
+
+router.get('/login/:id', (req, res, next) =>{
+console.log("받음")
+room.findOne({_id :req.params.id})
+  .then(r => {
+    res.send({room:r})
+    console.log(r)
+  })
+  .catch(e => {
+    res.send({msg : e})
+    console.error(e)
+  })
+});
+
+router.put('/deleteOne',(req,res,next)=>{
+  const id = req.body.id
+  const nickname = req.body.nickname
+  room.updateOne({_id:id},{$pull:{mem:nickname}},{new:true})
+        .then(r=>{
+          res.send(r)
+          console.log("success")
+      })
+      .catch(e =>{
+          res.send({msg:e})
+          console.error(e)
+      })
+})
 
 
 

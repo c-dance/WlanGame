@@ -6,7 +6,7 @@
     <v-row>
       <v-app-bar app dark dense>
       <v-col cols="3">
-        <h2> {{name}} 술모임 </h2>
+        <h2>{{room.name}}술모임 </h2>
       </v-col>
       <v-col cols="2" >
       <v-btn @click="chatMode" >
@@ -34,7 +34,7 @@
         <span class="mr-1">게임모드</span>
       </v-btn>
          </v-col>
-        <v-col cols="4">
+        <v-col cols="2">
       <v-btn @click="exitRoom" >
                   <v-img
           alt="Home Logo"
@@ -46,24 +46,21 @@
         /> 
         <span class="mr-1">나가기</span>
       </v-btn>
+      </v-col>
+      <v-col cols="3">
+        <v-row >
+        <v-col cols="2" v-for="mem in members" :key="mem">
+        <br/>
+        <v-img alt="Home Logo" class="shrink mr-2" contain src="../assets/p1.png" transition="scale-transition" width="40"/> 
+        <p :style="{'font-size':'15px'}">{{mem}}</p> 
         </v-col>
-        <v-col cols="1" >
-        <v-row>
-        <v-img v-for="mem in members" :key="mem"
-          alt="Home Logo"
-          class="shrink mr-2"
-          contain
-          src="../assets/p1.png"
-          transition="scale-transition"
-          width="20"
-        /> 
         </v-row>
       </v-col>
       </v-app-bar>
     </v-row>  
   </v-flex>
   <v-flex>
-    <v-expansion-panels dense v-show="selectMode" justify="center" dark light focusable accordion>
+    <v-expansion-panels dense v-if="selectMode" justify="center" dark light focusable accordion>
       <v-expansion-panel v-for="(item,i) in 5" :key="i">
         <v-expansion-panel-header>Item</v-expansion-panel-header>
         <v-expansion-panel-content >
@@ -84,7 +81,7 @@
     <div>
     <v-layout row>
       
-    <v-flex xs8><router-view></router-view></v-flex><!-- game window-->
+    <v-flex xs8><router-view v-bind="members"></router-view></v-flex><!-- game window-->
       
     <v-flex xs4>
        <v-layout column>
@@ -118,10 +115,11 @@ export default {
   name: "GameRoom",
     data(){
         return{
+            room:undefined,
             selectMode : false,
             myMsg : "",
             allMsg:"",
-            members :["toto","lolo"],
+            members :[],
             isChatOn:true,
             isGameOn:false,
             //name:"",
@@ -129,14 +127,14 @@ export default {
         }
     },
      props: {
-            name: {
-                type: String,
-                default : ''
-            },
               id: {
                 type: String,
                 default : ''
             },
+            nickname :{
+              type: String,
+              default :''
+            }
      },
     methods:{
 
@@ -144,21 +142,34 @@ export default {
             this.selectMode = !this.selectMode;
         },
         startGame(i){
-          this.$router.push({name:"game"+i, params:{mem:this.mem}});
-          this.selectMode = !this.selectMode;
+          this.selectMode = false;
           this.isChatOn = false;
           this.isGameOn = true;
+          this.$router.push({name:"game"+i});
         },
         chatMode(){
           if(this.isGameOn){
+            this.isGameOn=false;
+            this.isChatOn=true;
             this.$router.go(-1);
-            this.isGameOn = false;
-            this.isChatOn = true;
           }
         },
         exitRoom(){
             alert("술모임에서 나갑니다.");
-            this.$router.push({path:"/"});
+            const id = this.room._id
+            const name = localStorage.getItem("nickname")
+            axios.put('http://localhost:3000/api/rooms/deleteOne',{
+              id : id, nickname : name
+             })
+             .then(r=>{
+               console.log(r)
+               localStorage.removeItem("nickname")
+               this.$router.replace({path:"/"});
+
+               })
+              .catch(e=>{
+               console.log(e)
+                })
         },
         send(){
             this.allMsg += "\n"+this.myMsg ;
@@ -166,18 +177,18 @@ export default {
         }
     },
 
-    /* mounted(){
-      axios.get('http://localhost:3000/api/rooms'+ this.$route.params.id )
+    mounted(){
+      axios.get('http://localhost:3000/api/rooms/login/'+ this.$route.params.id )
       .then((r) => {
-        this.members = r.data.members
-        console.log(r)
+        this.room = r.data.room
+        this.members = r.data.room.mem
       })
       .catch((e) => {
         console.error(e.message)
       })
       //sessionStorage.setItem("wlanName", this.$route.params.wlanName)
       // axios -> update 멤버 숫자 늘림, socket등록
-    } */
+    }
     
 }
 

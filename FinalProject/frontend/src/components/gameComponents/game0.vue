@@ -45,7 +45,7 @@
 export default {
     data(){
         return{
-            members :["toto","lolo","hoho","popo"], //this.$route.params.mem
+            //members :["toto","lolo","hoho","popo"], //this.$route.params.mem
             peopleNum: null, //members.length
             cardNum:1, //v-model : default:1 / 배수로 돌리기
             isGameOn : false,
@@ -53,6 +53,11 @@ export default {
             playerCount : -1,
             cardList : [],
             
+        }
+    },
+    props:{
+        members:{
+            type:Array,
         }
     },
     methods : {

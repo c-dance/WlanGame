@@ -92,32 +92,12 @@
       <v-card-text class="text--primary">
         <div>{{r.desc}}</div>
       </v-card-text>
-      <v-card-actions>
-        <v-dialog v-model="dialog" persistent max-width="600px">
-          <template v-slot:activator="{ on, attrs }">
-          <v-btn color="orange" dark v-bind="attrs" v-on="on">들어가기</v-btn>
-          </template>
-          <v-card>
-            <v-card-text>
-              <v-layout column>
-                <v-text-field v-model="roomNick" label="닉네임 입력" required></v-text-field><br/>
-                <v-text-field v-if="r.lock" v-model="roomPwd" label="비밀번호 입력" required></v-text-field>
-              </v-layout>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="orange" dark @click="dialog = false">취소</v-btn>
-            <v-btn color="orange" dark @click="dialog = false && OpenRoom(r.name, r.lock, r.limit-r.mem.length, r._id)">입장</v-btn>
-            <v-spacer></v-spacer>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-
-        <!-- <v-spacer></v-spacer>
-        <v-btn position="center" color="orange" @click="OpenRoom(r.name, r.lock, r.limit-r.mem, r._id)" >
+      <v-card-actions><!-- 들어가기 btn start-->
+       <v-spacer></v-spacer>
+        <v-btn position="center" color="orange" @click="OpenDialog(r)">
         들어가기 
         <v-img contain transition="scale-transition" width="20px" height="20px" v-if='r.lock===true' src="../assets/lock.png"/></v-btn>
-        <v-spacer></v-spacer> -->
+        <v-spacer></v-spacer>
       </v-card-actions>
     </v-card>
     <br/>
@@ -129,7 +109,8 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from 'axios' 
+
 export default {
   name: "GameHome",
   data(){
@@ -162,8 +143,7 @@ export default {
     rooms : [],
     mem:[],
     dialog : false,
-    roomPwd:'',
-    roomNick:''
+    selectedRoom : null,
     }
   },//data
 
@@ -183,7 +163,7 @@ export default {
           let id = r.data.id[0]._id;
           console.log(r.data.id);
           alert(this.name+'의 방이 만들어졌습니다.');
-          this.$router.push({path: '/room/id/'+id, params: {name: this.name}});
+          this.$router.push({path: '/room/id/'+id});
         })
         .catch((e) => {
           console.error(e.message)
@@ -192,18 +172,16 @@ export default {
       //route.push ... 이동
 
     },
-    OpenRoom(name, lock, cnt, id){
-      if(cnt===0){
-        alert("술모임방이 꽉 찼습니다. 다른 방을 둘러보세요")
-      }else if(lock===false){
-        alert(name+ "술 모임방으로 들어갑니다.");
-        this.$router.push({name: 'Gameroom', params: {id:id, name:name}});
-
-      }else{
-        alert("비밀 술모임방입니다. 비밀먼호를 입력해주세요.")
+    OpenDialog(r){
+      if(r.limit-r.mem.length===0){
+        alert("방이 꽉 찼습니다.")
       }
-        
+      else{
+        console.log(r);
+        this.$router.push({path:'/login/'+r._id});
+      }
     }
+
   },//methods
 
   mounted () {
