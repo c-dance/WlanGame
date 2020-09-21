@@ -1,14 +1,23 @@
 <template>
     <v-container fluid>
-    <v-flex><!-- plyer list view-->
-
-    </v-flex>
+    <v-layout column>
+    <v-flex><!-- plyer list view / start-->
+        <v-row>
+          <v-col></v-col>
+          <v-col v-for="mem in members" :key="mem" >
+          <v-img alt="player" class="shrink mr-2" contain src="../../assets/p0.png"
+                transition="scale-transition" width="30"/> <p>{{mem}}</p>  
+          </v-col>
+          <v-col></v-col>
+        </v-row>
+      </v-flex><!-- plyer list view / end-->
     <v-flex>
     음식 명 : <input type="text" @keyup.enter.exact="callSearchAPI" v-model="word"><br/>
     검색 개수 : <input type="text" v-model="searchCount"><br/>
     <button @click="callSearchApi">검색</button><br/>
     </v-flex>
     <p id="res"></p>
+    </v-layout>
   </v-container>
 </template>
 
@@ -20,6 +29,12 @@ export default {
             word:'김치찌개',
             searchCount:5,
             result : '<li>'
+        }
+    },
+    props:{
+        members:{
+            type:Array,
+            default:[]
         }
     },
     methods:{

@@ -13,7 +13,11 @@ module.exports = {
           pathRewrite: { 
             '^/api': ''
           } 
-        } 
+        },
+        '/dictApi' :{
+          target:"https://opendict.korean.go.kr/search/searchResult?focus_name=query&query=",
+          changeOrigin: true
+        }
       } 
     },
     //outputDir: '../backend/public',  //생성되는 파일들은 백엔드 서버가 사용할 수 있다. 

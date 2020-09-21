@@ -60,20 +60,21 @@
     </v-row>  
   </v-flex>
   <v-flex>
-    <v-expansion-panels dense v-if="selectMode" justify="center" dark light focusable accordion>
-      <v-expansion-panel v-for="(item,i) in 5" :key="i">
-        <v-expansion-panel-header>Item</v-expansion-panel-header>
+    <v-expansion-panels dense v-if="selectMode" justify="center" dark light focusable accordion><!--selectMode-->
+      <v-expansion-panel v-for="game in games" :key="game">
+        <v-expansion-panel-header>{{game.title}}
         <v-expansion-panel-content >
           <v-row>
           <v-col align-self="center" cols="10">
-            <div><p>게임 설명</p></div>
+            <div><p>{{game.intro}}</p></div>
           </v-col>
           <v-col align-self="center" cols="2">
             <!--<router-link :to="{ path:'game'+i }" append> >game start</router-link>-->
-            <v-btn v-on:click="startGame(i)">start</v-btn>
+            <v-btn v-on:click="startGame(game.index)">start</v-btn>
           </v-col>
         </v-row>
         </v-expansion-panel-content>
+        </v-expansion-panel-header>
       </v-expansion-panel>
     </v-expansion-panels> 
   </v-flex>
@@ -81,7 +82,7 @@
     <div>
     <v-layout row>
       
-    <v-flex xs8><router-view v-bind="members"></router-view></v-flex><!-- game window-->
+    <v-flex xs8><router-view v-bind:members="members"></router-view></v-flex><!-- game window-->
       
     <v-flex xs4>
        <v-layout column>
@@ -120,10 +121,13 @@ export default {
             myMsg : "",
             allMsg:"",
             members :[],
-            isChatOn:true,
-            isGameOn:false,
-            //name:"",
-            //id:""
+            games:[
+              {index:0, title:"랜덤카드뽑기", intro:"셔플된 카드를 뽑습니다. 샷 카드가 나오면 원샷 당첨입니다."},
+              {index:1, title:"끝말 잇기", intro : "다 같이 끝말 잇기를 합니다. 진 사람이 원샷 당첨입니다."},
+              {index:2, title:"백종원 게임", intro: "음식 레시피를 말 해 보세요. 백종원 레시피에 포함된다면 원샷 당첨입니다."},
+              {index:3, title:"훈민정음 게임", intro : "test"}
+
+            ]
         }
     },
      props: {
@@ -143,18 +147,13 @@ export default {
         },
         startGame(i){
           this.selectMode = false;
-          this.isChatOn = false;
-          this.isGameOn = true;
           this.$router.push({name:"game"+i});
         },
         chatMode(){
-          if(this.isGameOn){
-            this.isGameOn=false;
-            this.isChatOn=true;
-            this.$router.go(-1);
-          }
+          this.selectMode = false;
+          this.$router.push({name:"chat"});
         },
-        exitRoom(){
+        exitRoom(){ 
             alert("술모임에서 나갑니다.");
             const id = this.room._id
             const name = localStorage.getItem("nickname")

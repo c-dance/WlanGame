@@ -1,67 +1,136 @@
 <template>
     <v-container fluid>
+        <v-layout column>
+        <v-flex><!-- plyer list view / start-->
+        <v-row>
+          <v-col></v-col>
+          <v-col v-for="(mem,i) in members" :key="mem" >
+            <v-img v-if="i===player" alt="player" class="shrink mr-2" contain src="../../assets/sejong1.png"
+                transition="scale-transition" width="30"/>
+            <v-img v-else alt="player" class="shrink mr-2" contain src="../../assets/sejong0.png"
+                transition="scale-transition" width="30"/><p>{{mem}}</p>
+          </v-col>
+          <v-col></v-col>
+        </v-row>
+      </v-flex><!-- plyer list view / end-->
         
-        <v-layout row>
-            <v-flex v-if="!isGameOn">
-                <v-text-field  required @keyup.enter.exact = "SetChosung"></v-text-field>
-                <v-btn>초성 입력</v-btn>
+        <v-layout wrap align-center column v-if="isGameOn">
+            <v-flex text-xs-center>
+            <h1>초성 : {{chosung}}</h1>
             </v-flex>
-            <v-flex  v-else>
-                <h3>{{chosung}}</h3>
-            </v-flex>
-        </v-layout>
-        <v-layout row v-if="isGameOn && !gameEnd">
+            <br/><br/>
             <v-flex>
-                <v-textarea>{{dictionary}}</v-textarea>
-            </v-flex>
+                <v-text-field label="입력 후 엔터키를 누르세요" required @keyup.enter.exact = "OnClickNext"></v-text-field>
+            </v-flex><!-- 단어 입력 끝-->
+            <br/>
             <v-flex>
-                <v-text-field  required @keyup.enter.exact = "SetChosung"></v-text-field>
-                <p>입력 후 Enter키를 누르세요</p>
+            <p>단어 검색 결과 : </p>
+            <v-card><v-card-text>{{dictionary}}</v-card-text></v-card>
             </v-flex>
         </v-layout>
-        <v-layout column v-if="isGameOn && gameEnd">
+        <v-layout justify-center v-if="!isGameOn">
+            <v-flex x1></v-flex>
+            <v-flex>
+                <v-text-field v-model="chosung" label="게임을 시작할 단어를 입력한 후 엔터키를 누르세요" required @keyup.enter.exact = "SetChosung"></v-text-field>
+            </v-flex>
+            <v-flex x1></v-flex>
         </v-layout>
-
-
-
+        <v-layout v-show="isGameEnded" row>
+        <v-flex><h1>{{lastPlayer()}} : 원샷 당첨!</h1></v-flex>
+        <v-flex><v-btn @click="OnClickReset">다시 하기</v-btn></v-flex>
+        <v-flex><h2>게임을 종료하려면 상단의 채팅 모드를 클릭하여 돌아가세요</h2></v-flex>
+        </v-layout>
+        </v-layout>
     </v-container>
 </template>
 
 <script>
 import axios from 'axios'
+import cheerio from 'cheerio'
+
 export default {
     data(){
         return{
             isGameOn : false,
-            gameEnd: false,
+            isGameEnded: false,
             chosung:"",
             word:"",
             words:[],
-            dictionary:""
+            dictionary:"",
+            player:0,
+            hangeulCheck : /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/,
+            chosungs : [ "ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ" ],
+            dictUrl :"https://opendict.korean.go.kr/search/searchResult?focus_name=query&query="
+        }
+    },
+    props:{
+        members:{
+            type:Array,
+            default:[]
         }
     },
     methods:{
-        callSearchApi(){
-            this.result = '<li>'
-            axios.get('http://localhost:8000/callSearchAPI?word='+this.word + '&count=' + this.searchCount)
-            .then((res)=>{
-                const items = res.data;
-                for(let i = 0 ;i <items.length;i++){
-                    let title = items[i].title.replace(/(<b>|<\/b>)/g,'');
-                    let description = items[i].description.replace(/(<b>|<\/b>)/g,'');
-
-                    title = title.replace('백종원',`<span style = "background-color : red">백종원</span>`);
-                    description = description.replace('백종원',`<span style = "background-color : red">백종원</span>`);
-
-                    this.result += title +'</li><br/><li>';
-                    this.result += description +'</li><br/>';
+        SetChosung(){
+            if(this.hangeulCheck.test(this.chosung.trim())){
+                if(this.chosung.trim().length==2){
+                    this.chosung = this.MakeChosung()
+                    if(this.chosung) this.isGameOn=true
+                    else {
+                        this.chosung=""
+                        alert("초성을 찾을 수 없는 단어입니다. 다시 입력해주세요.")
+                    }
+                }else{
+                    alert("단어는 두 글자 입력 해 주세요!")
                 }
-                if(this.result.indexOf('백종원') >= 0) alert('당첨되었습니다.');
-                else alert('통과')
-                document.getElementById('res').innerHTML = this.result;
-            })
+            }else{
+                alert("한글만 입력해 주세요!")
+            }
+        },
+        MakeChosung(){
+            let a = this.chosung.charCodeAt(0)-0xAC00; 
+		    let b = this.chosung.charCodeAt(1)-0xAC00; 
+		    let a_loc = parseInt((a/28)/21); 
+            let b_loc = parseInt((b/28)/21);
+            if(this.chosungs[a_loc] && this.chosungs[b_loc]) return this.chosungs[a_loc] + this.chosungs[b_loc]
+             
+        },
+        OnClickNext(){
+            let result = this.searchDict(this.word.trim())
+            result===true? this.turnNext():endGame()  
+        },
+        turnNext(){
+            this.player++;
+            if(this.player===this.members.length) this.player=0;   
+        },
+        searchDict(word){
+            axios.get("http://localhost:8080/dictApi"+word)
+                .then(r=>{
+                    const $ = cheerio.load(r.data)
+                    console.log($('div.container'))
+                })
+                .catch(e=>{
+                    console.log(e + "사전 접근 실패")
+                })
+
+        },
+        lastPlayer(){
+            return this.members[this.player]
+        },
+        OnClickReset(){
+            this.player=0
+            this.chosung=""
+            this.word=""
+            this.words=[]
+            this.dictionary=""
+            this.isGameEnded=false
+            this.isGameOn=false
         }
+
+    },
+    mounted(){
+
     }
+    
 }
 </script>
 

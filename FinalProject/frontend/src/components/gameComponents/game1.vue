@@ -35,11 +35,16 @@ const regex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
 export default {
   data(){
     return{
-      members :["toto","lolo","hoho","popo"], //this.$route.params.mem
       word : '',
       result : []
     }
   },
+  props:{
+        members:{
+            type:Array,
+            default:[]
+        }
+    },
   methods:{
     callDictApi(){
       if(!regex.test(this.word)){

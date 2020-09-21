@@ -58,6 +58,7 @@ export default {
     props:{
         members:{
             type:Array,
+            default:[]
         }
     },
     methods : {

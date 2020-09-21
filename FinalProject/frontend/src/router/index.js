@@ -27,10 +27,10 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../components/GameRoom.vue'),
     children : [
       {path :"game0", name:"game0", component: () => import('../components/gameComponents/game0.vue')},
-      {path :"game1", name:"game1",component: () => import('../components/gameComponents/game1.vue')},
+      {path :"game1", name:"game1", component: () => import('../components/gameComponents/game1.vue')},
       {path :"game2", name:"game2", component: () => import('../components/gameComponents/game2.vue')},
-      {path :"game3", name:"game3",component: () => import('../components/gameComponents/game3.vue')},
-      {path :"game4", name:"game4",component: () => import('../components/gameComponents/game4.vue')}
+      {path :"game3", name:"game3", component: () => import('../components/gameComponents/game3.vue')},
+      {path :"chat", name:"chat", component: () => import('../components/gameComponents/chat.vue')}
     ],
     props: true
 
