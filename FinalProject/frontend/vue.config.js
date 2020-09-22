@@ -16,7 +16,7 @@ module.exports = {
         },
         '/dictApi' :{
           target:"https://opendict.korean.go.kr/search/searchResult?focus_name=query&query=",
-          changeOrigin: true
+          } 
         }
       } 
     },

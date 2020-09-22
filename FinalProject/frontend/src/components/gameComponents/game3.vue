@@ -20,7 +20,7 @@
             </v-flex>
             <br/><br/>
             <v-flex>
-                <v-text-field label="입력 후 엔터키를 누르세요" required @keyup.enter.exact = "OnClickNext"></v-text-field>
+                <v-text-field v-model="word" label="입력 후 엔터키를 누르세요" required @keyup.enter.exact = "OnClickNext"></v-text-field>
             </v-flex><!-- 단어 입력 끝-->
             <br/>
             <v-flex>
@@ -95,23 +95,37 @@ export default {
              
         },
         OnClickNext(){
-            let result = this.searchDict(this.word.trim())
-            result===true? this.turnNext():endGame()  
+            let result = this.searchDict(this.word)
+            console.log("result"+result)
+            if(result!==""){
+                this.word =""
+                this.dictionary = result
+                this.words.push(result)
+                this.turnNext()
+            }else{
+                alert("fail")
+            }
         },
         turnNext(){
             this.player++;
             if(this.player===this.members.length) this.player=0;   
         },
         searchDict(word){
+            const search_result ="body > #wrap > .container > #contentWrap > #content > .cont_box_lr > #searchPaging > .floatL > .mt30 > .panel > li > .group > .search_result"
+            const meaning_result = "dl > dd > a > .word_dis "
+            let result = ""
             axios.get("http://localhost:8080/dictApi"+word)
                 .then(r=>{
                     const $ = cheerio.load(r.data)
-                    console.log($('div.container'))
+                    const $result = $(search_result)
+                   $(search_result).find(meaning_result).each(function(index, elem){
+                       result += $(this).text()+"\n"
+                       if(index==3) return result
+                   })
                 })
                 .catch(e=>{
                     console.log(e + "사전 접근 실패")
                 })
-
         },
         lastPlayer(){
             return this.members[this.player]
