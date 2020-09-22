@@ -4,7 +4,7 @@
         <v-flex><!-- plyer list view / start-->
         <v-row>
           <v-col></v-col>
-          <v-col v-for="(mem,i) in members" :key="mem" >
+          <v-col v-for="(mem,i) in members" :key="i" >
             <v-img v-if="i===player" alt="player" class="shrink mr-2" contain src="../../assets/sejong1.png"
                 transition="scale-transition" width="30"/>
             <v-img v-else alt="player" class="shrink mr-2" contain src="../../assets/sejong0.png"
@@ -14,13 +14,13 @@
         </v-row>
       </v-flex><!-- plyer list view / end-->
         
-        <v-layout wrap align-center column v-if="isGameOn">
+        <v-layout wrap align-center column v-show="isGameOn">
             <v-flex text-xs-center>
             <h1>초성 : {{chosung}}</h1>
             </v-flex>
             <br/><br/>
             <v-flex>
-                <v-text-field v-model="word" label="입력 후 엔터키를 누르세요" required @keyup.enter.exact = "OnClickNext"></v-text-field>
+                <v-text-field v-model="word" label="입력 후 엔터키를 누르세요" required @keyup.enter = "OnClickNext"></v-text-field>
             </v-flex><!-- 단어 입력 끝-->
             <br/>
             <v-flex>
@@ -28,10 +28,10 @@
             <v-card><v-card-text>{{dictionary}}</v-card-text></v-card>
             </v-flex>
         </v-layout>
-        <v-layout justify-center v-if="!isGameOn">
+        <v-layout justify-center v-show="!isGameOn">
             <v-flex x1></v-flex>
             <v-flex>
-                <v-text-field v-model="chosung" label="게임을 시작할 단어를 입력한 후 엔터키를 누르세요" required @keyup.enter.exact = "SetChosung"></v-text-field>
+                <v-text-field v-model="chosung" label="게임을 시작할 단어를 입력한 후 엔터키를 누르세요" required v-on:keyup.enter = "SetChosung"></v-text-field>
             </v-flex>
             <v-flex x1></v-flex>
         </v-layout>
@@ -60,7 +60,6 @@ export default {
             player:0,
             hangeulCheck : /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/,
             chosungs : [ "ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ" ],
-            dictUrl :"https://opendict.korean.go.kr/search/searchResult?focus_name=query&query="
         }
     },
     props:{
@@ -85,6 +84,7 @@ export default {
             }else{
                 alert("한글만 입력해 주세요!")
             }
+            console.log(this.chosung)
         },
         MakeChosung(){
             let a = this.chosung.charCodeAt(0)-0xAC00; 
@@ -95,22 +95,30 @@ export default {
              
         },
         OnClickNext(){
-            let result = this.searchDict(this.word)
-            console.log("result"+result)
-            if(result!==""){
-                this.word =""
-                this.dictionary = result
-                this.words.push(result)
-                this.turnNext()
-            }else{
-                alert("fail")
-            }
+            console.log(this.word)
+            this.searchDict()
         },
         turnNext(){
             this.player++;
             if(this.player===this.members.length) this.player=0;   
         },
-        searchDict(word){
+        searchDict(){
+            console.log(this.word)
+            const search_result ="body > #wrap > .container > #contentWrap > #content > .cont_box_lr > #searchPaging > .floatL > .mt30 > .panel > li > .group > .search_result"
+            const meaning_result = "dl > dd > a > .word_dis "
+            let result = ""
+            axios.get("http://localhost:8080/dictApi"+word)
+                .then(r=>{
+                    const $ = cheerio.load(r.data)
+                    console.log($.find(search_result+" > "+meaning_result).text())
+                      
+                })
+                .catch(e=>{
+                    console.log(e + "사전 접근 실패")
+                })
+            //return result
+        },
+/*         searchDict(word){
             const search_result ="body > #wrap > .container > #contentWrap > #content > .cont_box_lr > #searchPaging > .floatL > .mt30 > .panel > li > .group > .search_result"
             const meaning_result = "dl > dd > a > .word_dis "
             let result = ""
@@ -126,7 +134,7 @@ export default {
                 .catch(e=>{
                     console.log(e + "사전 접근 실패")
                 })
-        },
+        }, */
         lastPlayer(){
             return this.members[this.player]
         },
@@ -139,9 +147,6 @@ export default {
             this.isGameEnded=false
             this.isGameOn=false
         }
-
-    },
-    mounted(){
 
     }
     

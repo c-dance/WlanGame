@@ -1,12 +1,12 @@
 <template>
-<v-app>
+
 <v-container fluid>
 <v-layout column>
   <v-flex>
     <v-row>
       <v-app-bar app dark dense>
       <v-col cols="3">
-        <h2>{{room.name}}술모임 </h2>
+        <h2>{{roomName}}술모임 </h2>
       </v-col>
       <v-col cols="2" >
       <v-btn @click="chatMode" >
@@ -49,7 +49,7 @@
       </v-col>
       <v-col cols="3">
         <v-row >
-        <v-col cols="2" v-for="mem in members" :key="mem">
+        <v-col cols="2" v-for="(mem,index) in members" :key="index">
         <br/>
         <v-img alt="Home Logo" class="shrink mr-2" contain src="../assets/p1.png" transition="scale-transition" width="40"/> 
         <p :style="{'font-size':'15px'}">{{mem}}</p> 
@@ -61,8 +61,8 @@
   </v-flex>
   <v-flex>
     <v-expansion-panels dense v-if="selectMode" justify="center" dark light focusable accordion><!--selectMode-->
-      <v-expansion-panel v-for="game in games" :key="game">
-        <v-expansion-panel-header>{{game.title}}
+      <v-expansion-panel v-for="(game,index) in games" :key="index">
+        <v-expansion-panel-header>{{game.title}}</v-expansion-panel-header>
         <v-expansion-panel-content >
           <v-row>
           <v-col align-self="center" cols="10">
@@ -70,11 +70,10 @@
           </v-col>
           <v-col align-self="center" cols="2">
             <!--<router-link :to="{ path:'game'+i }" append> >game start</router-link>-->
-            <v-btn v-on:click="startGame(game.index)">start</v-btn>
+            <v-btn v-on:click="startGame(index)">start</v-btn>
           </v-col>
         </v-row>
         </v-expansion-panel-content>
-        </v-expansion-panel-header>
       </v-expansion-panel>
     </v-expansion-panels> 
   </v-flex>
@@ -106,32 +105,33 @@
   <v-flex></v-flex>
 </v-layout>
 </v-container>
-  </v-app>
+
 </template>
 
 <script>
 import axios from 'axios'
 
 export default {
-  name: "GameRoom",
+  name: "Gameroom",
     data(){
         return{
-            room:undefined,
+            room:null,
+            roomName:'',
             selectMode : false,
             myMsg : "",
             allMsg:"",
             members :[],
             games:[
-              {index:0, title:"랜덤카드뽑기", intro:"셔플된 카드를 뽑습니다. 샷 카드가 나오면 원샷 당첨입니다."},
-              {index:1, title:"끝말 잇기", intro : "다 같이 끝말 잇기를 합니다. 진 사람이 원샷 당첨입니다."},
-              {index:2, title:"백종원 게임", intro: "음식 레시피를 말 해 보세요. 백종원 레시피에 포함된다면 원샷 당첨입니다."},
-              {index:3, title:"훈민정음 게임", intro : "test"}
+              {title:"랜덤카드뽑기", intro:"셔플된 카드를 뽑습니다. 샷 카드가 나오면 원샷 당첨입니다."},
+              {title:"끝말 잇기", intro : "다 같이 끝말 잇기를 합니다. 진 사람이 원샷 당첨입니다."},
+              {title:"백종원 게임", intro: "음식 레시피를 말 해 보세요. 백종원 레시피에 포함된다면 원샷 당첨입니다."},
+              {title:"훈민정음 게임", intro : "test"}
 
             ]
         }
     },
      props: {
-              id: {
+            id : {
                 type: String,
                 default : ''
             },
@@ -145,9 +145,9 @@ export default {
         gameList(){
             this.selectMode = !this.selectMode;
         },
-        startGame(i){
+        startGame(index){
           this.selectMode = false;
-          this.$router.push({name:"game"+i});
+          this.$router.push({name:"game"+index});
         },
         chatMode(){
           this.selectMode = false;
@@ -180,6 +180,7 @@ export default {
       axios.get('http://localhost:3000/api/rooms/login/'+ this.$route.params.id )
       .then((r) => {
         this.room = r.data.room
+        this.roomName = r.data.room.name
         this.members = r.data.room.mem
       })
       .catch((e) => {
