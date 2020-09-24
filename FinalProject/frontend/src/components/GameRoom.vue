@@ -90,14 +90,20 @@
        <v-layout column wrap>
             <v-flex>
                 <v-card  class="mx-auto" min-height="440">
-                채팅창
-                {{ allMsg }}
+                  <v-list>
+                    <v-list-item v-for="(msg, index) in allMsg" :key="index">
+                    <v-list-item-avatar>{{msg.nickname}}</v-list-item-avatar>
+                    <v-list-item-content>
+                    <v-list-item-subtitle v-text="msg.msg"></v-list-item-subtitle>
+                    </v-list-item-content>
+                    </v-list-item>
+                  </v-list>
                 </v-card>
             </v-flex>
             <v-flex>
                 <!-- <v-card class="mx-auto" min-height="100"></v-card> -->
                 <v-btn block v-on:click="send" dense height="40" color="#F39C12" dark>message send</v-btn>
-                <v-textarea type="text" v-model="myMsg" @keyup.enter.exact="send" outlined rows="2" min-height="80" row-height = "60"></v-textarea>  
+                <v-textarea type="text" v-model="myMsg" @keyup.enter="send" outlined rows="2" min-height="80" row-height = "60"></v-textarea>  
             </v-flex>
         </v-layout>
       </v-flex>
@@ -121,12 +127,12 @@ export default {
             roomName:'',
             selectMode : false,
             myMsg : "",
-            allMsg:"",
+            allMsg:[],
             gameIntro:[
               {title:"랜덤카드뽑기", intro:"셔플된 카드를 뽑습니다. 샷 카드가 나오면 원샷 당첨입니다."},
-              //{title:"끝말 잇기", intro : "다 같이 끝말 잇기를 합니다. 진 사람이 원샷 당첨입니다."},
-              //{title:"백종원 게임", intro: "음식 레시피를 말 해 보세요. 백종원 레시피에 포함된다면 원샷 당첨입니다."},
-              //{title:"훈민정음 게임", intro : "test"}
+              {title:"끝말 잇기", intro : "다 같이 끝말 잇기를 합니다. 진 사람이 원샷 당첨입니다."},
+              {title:"백종원 게임", intro: "음식 레시피를 말 해 보세요. 백종원 레시피에 포함된다면 원샷 당첨입니다."},
+              {title:"훈민정음 게임", intro : "test"}
             ],
             isGameOn:false,
             selectedGame:0,
@@ -194,8 +200,17 @@ export default {
             }
         },
         send(){
+          const roomId = this.room._id
           const msg = this.myMsg.trim()
-        },
+          const nickname = localStorage.getItem("nickname")
+          console.log(typeof nickname)
+          axios.put('http://localhost:3000/api/chat/newmsg',{
+            roomId:roomId, nickname : nickname, msg:msg
+          })
+            .then(r=>{console.log(r)})
+            .catch(e=>{console.log(e)})
+
+          },
         ChangeGames:function(payload){
           this.$store.commit("ChangeGames",payload)
         }
@@ -211,8 +226,17 @@ export default {
       .catch((e) => {
         console.error(e.message)
       })
-      //sessionStorage.setItem("wlanName", this.$route.params.wlanName)
-      // axios -> update 멤버 숫자 늘림, socket등록
+
+      axios.get('http://localhost:3000/api/chat/'+ this.$route.params.id )
+        .then((r)=>{
+          this.allMsg = r.data
+        })
+        .catch((e)=>{
+          console.log("allMsg failed")
+        })
+    },
+    created(){
+
     },
     computed : {
       members(){

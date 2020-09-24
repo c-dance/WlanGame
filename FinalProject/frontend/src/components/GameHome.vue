@@ -168,7 +168,7 @@ export default {
         })
         .catch((e) => {
           console.error(e.message)
-          alert("방이 만들기에 실패했습니다.");
+          alert("방 만들기에 실패했습니다.");
         })
       //route.push ... 이동
 

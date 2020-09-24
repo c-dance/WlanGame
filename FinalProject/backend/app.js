@@ -7,7 +7,7 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var apiRoomRouter = require('./routes/api/rooms');
-//var apiChatRouter = require('./routes/api/chat');
+var apiChatRouter = require('./routes/api/chat');
 
 var cors = require('cors');
 
@@ -23,16 +23,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET", "PUT", "POST", "DELETE", "OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  next();
-})
+
 
 
 app.use('/api/rooms', apiRoomRouter);
-//app.use('/api/chat', apiChatRouter);
+app.use('/api/chat', apiChatRouter);
 app.use('/', indexRouter);
 app.use(history());
 

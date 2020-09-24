@@ -6,7 +6,6 @@ import vuetify from './plugins/vuetify';
 
 
 /* 
-
 import './plugins/socketPlugin'
 import Directives from './plugins/directives'
 import './assets/_common.scss' 
