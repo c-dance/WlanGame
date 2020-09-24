@@ -4,7 +4,17 @@ import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify';
 
+
+/* 
+
+import './plugins/socketPlugin'
+import Directives from './plugins/directives'
+import './assets/_common.scss' 
+Vue.use(Directives)
+*/ 
+
 Vue.config.productionTip = false
+
 
 new Vue({
   router,

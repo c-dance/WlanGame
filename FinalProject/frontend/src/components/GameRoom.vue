@@ -1,6 +1,6 @@
 <template>
 
-<v-container fluid>
+<v-container fluid fill-height aacontaine>
 <v-layout column>
   <v-flex>
     <v-row>
@@ -61,7 +61,7 @@
   </v-flex>
   <v-flex>
     <v-expansion-panels dense v-if="selectMode" justify="center" dark light focusable accordion><!--selectMode-->
-      <v-expansion-panel v-for="(game,index) in games" :key="index">
+      <v-expansion-panel v-for="(game,index) in gameIntro" :key="index">
         <v-expansion-panel-header>{{game.title}}</v-expansion-panel-header>
         <v-expansion-panel-content >
           <v-row>
@@ -81,21 +81,23 @@
     <div>
     <v-layout row>
       
-    <v-flex xs8><router-view v-bind:members="members"></router-view></v-flex><!-- game window-->
+    <v-flex xs8><router-view 
+                v-bind:gameData="gameData[selectedGame]" 
+                v-bind:members="members"
+                v-on:changeGames="ChangeGames"></router-view></v-flex><!-- game window-->
       
     <v-flex xs4>
-       <v-layout column>
+       <v-layout column wrap>
             <v-flex>
-                <v-card  class="mx-auto" min-height="600">
+                <v-card  class="mx-auto" min-height="440">
                 채팅창
                 {{ allMsg }}
                 </v-card>
             </v-flex>
             <v-flex>
-                <v-card class="mx-auto" min-height="100">
+                <!-- <v-card class="mx-auto" min-height="100"></v-card> -->
                 <v-btn block v-on:click="send" dense height="40" color="#F39C12" dark>message send</v-btn>
-                <v-textarea type="text" v-model="myMsg" @keyup.enter.exact="send" outlined rows="2" min-height="60" row-height = "60"></v-textarea>
-                </v-card>
+                <v-textarea type="text" v-model="myMsg" @keyup.enter.exact="send" outlined rows="2" min-height="80" row-height = "60"></v-textarea>  
             </v-flex>
         </v-layout>
       </v-flex>
@@ -120,14 +122,14 @@ export default {
             selectMode : false,
             myMsg : "",
             allMsg:"",
-            members :[],
-            games:[
+            gameIntro:[
               {title:"랜덤카드뽑기", intro:"셔플된 카드를 뽑습니다. 샷 카드가 나오면 원샷 당첨입니다."},
-              {title:"끝말 잇기", intro : "다 같이 끝말 잇기를 합니다. 진 사람이 원샷 당첨입니다."},
-              {title:"백종원 게임", intro: "음식 레시피를 말 해 보세요. 백종원 레시피에 포함된다면 원샷 당첨입니다."},
-              {title:"훈민정음 게임", intro : "test"}
-
-            ]
+              //{title:"끝말 잇기", intro : "다 같이 끝말 잇기를 합니다. 진 사람이 원샷 당첨입니다."},
+              //{title:"백종원 게임", intro: "음식 레시피를 말 해 보세요. 백종원 레시피에 포함된다면 원샷 당첨입니다."},
+              //{title:"훈민정음 게임", intro : "test"}
+            ],
+            isGameOn:false,
+            selectedGame:0,
         }
     },
      props: {
@@ -146,48 +148,80 @@ export default {
             this.selectMode = !this.selectMode;
         },
         startGame(index){
-          this.selectMode = false;
-          this.$router.push({name:"game"+index});
+          this.selectMode = false
+          this.isGameOn = true,
+          this.selectedGame=index
+          console.log(this.members)
+          this.$router.push({name:"game"+index})
         },
         chatMode(){
           this.selectMode = false;
+          this.isGameOn = false;
           this.$router.push({name:"chat"});
         },
         exitRoom(){ 
-            alert("술모임에서 나갑니다.");
+            const memNum = this.room.mem.length
             const id = this.room._id
             const name = localStorage.getItem("nickname")
-            axios.put('http://localhost:3000/api/rooms/deleteOne',{
-              id : id, nickname : name
-             })
-             .then(r=>{
-               console.log(r)
-               localStorage.removeItem("nickname")
-               this.$router.replace({path:"/"});
-
-               })
+            if(memNum===1){
+              alert("술모임방의 마지막 멤버입니다. 술모임방이 사라집니다.")
+              axios.put('http://localhost:3000/api/rooms/deleteRoom',{
+                id:id
+              })
+              .then(r=>{
+                console.log("delete room") 
+                localStorage.removeItem("nickname")
+                this.$router.replace({path:"/"});
+              })
               .catch(e=>{
-               console.log(e)
+                console.log("delete fail")
+              })
+
+            }
+            else{
+              alert("술모임에서 나갑니다.");
+              axios.put('http://localhost:3000/api/rooms/deleteOne',{
+                id : id, nickname : name
+              })
+                .then(r=>{
+                console.log(r)
+                localStorage.removeItem("nickname")
+                this.$router.replace({path:"/"}); 
                 })
+                .catch(e=>{
+                console.log(e)
+                })
+            }
         },
         send(){
-            this.allMsg += "\n"+this.myMsg ;
-            this.myMsg = "";
+          const msg = this.myMsg.trim()
+        },
+        ChangeGames:function(payload){
+          this.$store.commit("ChangeGames",payload)
         }
     },
-
     mounted(){
       axios.get('http://localhost:3000/api/rooms/login/'+ this.$route.params.id )
       .then((r) => {
         this.room = r.data.room
         this.roomName = r.data.room.name
-        this.members = r.data.room.mem
+        this.$store.commit('ChangeMembers',r.data.room.mem)
+        console.log(localStorage.getItem("nickname"))
       })
       .catch((e) => {
         console.error(e.message)
       })
       //sessionStorage.setItem("wlanName", this.$route.params.wlanName)
       // axios -> update 멤버 숫자 늘림, socket등록
+    },
+    computed : {
+      members(){
+        return this.$store.getters.getMembers;
+      },
+      gameData(){
+        return this.$store.getters.getGames;
+      }
+      
     }
     
 }

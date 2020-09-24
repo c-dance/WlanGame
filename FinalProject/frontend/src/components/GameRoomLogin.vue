@@ -77,6 +77,7 @@ export default {
       .then((r) => {
         this.room = r.data.room
         console.log(r.data.room.lock)
+        
       })
       .catch((e) => {
         console.error(e.message)

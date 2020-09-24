@@ -6,7 +6,9 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
-var apiRouter = require('./routes/api');
+var apiRoomRouter = require('./routes/api/rooms');
+//var apiChatRouter = require('./routes/api/chat');
+
 var cors = require('cors');
 
 var mongoose = require('mongoose');
@@ -19,9 +21,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use(cors());
-app.use('/api', apiRouter);
+
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET", "PUT", "POST", "DELETE", "OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  next();
+})
+
+
+app.use('/api/rooms', apiRoomRouter);
+//app.use('/api/chat', apiChatRouter);
 app.use('/', indexRouter);
 app.use(history());
 

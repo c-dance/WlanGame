@@ -163,6 +163,7 @@ export default {
           let id = r.data.id[0]._id;
           console.log(r.data.id);
           alert(this.name+'의 방이 만들어졌습니다.');
+          localStorage.setItem("nickname",this.nickname)
           this.$router.push({path: '/room/id/'+id});
         })
         .catch((e) => {
